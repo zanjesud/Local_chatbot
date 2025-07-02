@@ -5,9 +5,9 @@
     --background-chat: #f8f9fa;      /* Off-white for chat area */
     --user-bubble: #fff;             /* White for user */
     --bot-bubble: #e0e0e0;           /* Light grey for bot */
-    --bot-text: #23232b;             /* Dark text for bot */
+    --bot-text: #1e1e25;             /* Dark text for bot */
     --user-text: #23232b;            /* Green text for user */
-    --border-radius: 16px;
+    --border-radius: 24px;
     --transition: 0.2s cubic-bezier(.4,0,.2,1);
     --shadow: 0 2px 16px rgba(0,0,0,0.08);
     --input-bg: #fff;
@@ -44,23 +44,50 @@ main {
 header {
     background: #fff;
     color: #10a37f;
-    padding: 1.2em 2em 1em 2em;
+    padding: 1.5em 2em 1.2em 2em;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 2px solid #e0e0e0;
 }
 
-.controls select {
+.chatbot-title {
+    font-size: 2.2em;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #10a37f;
+    font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+}
+
+.model-label {
+    font-size: 1.1em;
+    color: #23232b;
+    font-weight: 500;
+    margin-right: 0.5em;
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+
+.model-selector {
     background: #f8f9fa;
     color: #23232b;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    padding: 0.5em 1em;
-    font-size: 1em;
-    transition: background var(--transition);
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.5em 1.2em;
+    font-size: 1.1em;
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+    font-weight: 500;
     outline: none;
+    transition: border var(--transition), box-shadow var(--transition);
     box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.model-selector:focus {
+    border-color: #10a37f;
 }
 
 /* ===== Chat History ===== */
@@ -108,8 +135,9 @@ header {
 .message.user {
     background: var(--user-bubble);
     color: var(--user-text);
-    margin-left: auto;
-    border-radius: var(--border-radius) 8px var(--border-radius) var(--border-radius);
+    margin-right: auto;
+    margin-left: 0;
+    border-radius: 8px var(--border-radius) var(--border-radius) var(--border-radius);
     border: 1px solid #e0e0e0;
     box-shadow: 0 2px 12px rgba(16,163,127,0.10);
     padding: 1.1em 1.5em;
@@ -124,13 +152,13 @@ header {
     background: var(--bot-bubble);
     color: var(--bot-text);
     margin-right: auto;
-    margin-left: 0;
+    margin-left: 5%;
     border-radius: 8px var(--border-radius) var(--border-radius) var(--border-radius);
     border: 1.5px solid #e0e0e0;
     box-shadow: 0 2px 12px rgba(0,0,0,0.10);
     padding: 1.1em 1.5em;
-    width: 100%;
-    max-width: 98vw;
+    /* width: 100%; */
+    max-width: 70%;
     font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     font-size: 16px;
     letter-spacing: 0.01em;
@@ -176,7 +204,7 @@ header {
 .typing-dot {
     width: 8px;
     height: 8px;
-    background: #888;
+    background: #1beb72;
     border-radius: 50%;
     animation: pulse 1.5s infinite;
 }
@@ -286,9 +314,38 @@ input[type="file"] {
     box-shadow: 0 2px 8px rgba(16,163,127,0.08);
     font-size: 1.3em;
 }
+/* ===== Code Blocks ===== */
+.chat-code-block {
+    background: #343435;
+    color: #f8f8f2;
+    border-radius: 30px;
+    padding: 1em;
+    margin: .70em 0;
+    font-size: 1em;
+    overflow-x: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.inline-code {
+    background: #e6f9ed;
+    color: #17644e;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    font-size: 0.98em;
+}
 .send-button:hover {
     background: #0d8e6f;
     color: #fff;
+}
+/* Add to your style.css */
+.send-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.chat-input:disabled {
+    background: #f0f0f0;
+    color: #aaa;
+    cursor: not-allowed;
 }
 
 /* ===== Responsive Design ===== */

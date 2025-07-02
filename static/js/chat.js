@@ -24,6 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show typing indicator if loading
         document.getElementById('typing-indicator').style.display = state.loading ? 'flex' : 'none';
+        
+        // Disable/enable input and send button
+        document.querySelector('.send-button').disabled = state.loading;
+        document.querySelector('.chat-input').disabled = state.loading;
 
         // Auto-scroll to bottom
         chatHistory.scrollTop = chatHistory.scrollHeight;
@@ -77,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleChatSubmit(e) {
         e.preventDefault();
+        if(state.loading) return; // Prevent double submit
         const promptInput = document.getElementById('prompt-input');
         const fileInput = document.getElementById('file-input');
         const prompt = promptInput.value.trim();
@@ -134,8 +139,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             botMessage += data.message.content;                            
                             botMessageContainer.innerHTML = botMessage.replace(/\n/g, '<br>');
                             chatHistory.scrollTop = chatHistory.scrollHeight;
+                            if (window.hljs) hljs.highlightAll();
                         } else if (data.error) {
                             botMessageContainer.innerHTML = `Error: ${data.error}`;
+                             // Release lock on error
+                            state.loading = false;
+                            render();
+                            if (window.hljs) hljs.highlightAll();
                             return;
                         }
                     } catch (error) {
@@ -144,7 +154,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-        state.messages[state.messages.length - 1].content = botMessage;
+
+        // Format the final bot message before saving and rendering
+        function formatBotMessage(text) {
+            // Format code blocks (```lang\ncode```)
+            text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
+                lang = lang || ''; // fallback if no language
+                return `<pre class="chat-code-block"><code class="language-${lang}">${escapeHtml(code)}</code></pre>`;
+            });
+            // Format code blocks without language (```code```)
+            text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
+                return `<pre class="chat-code-block"><code>${escapeHtml(code)}</code></pre>`;
+            });
+            // Inline code
+            text = text.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+            // Bold and italic
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            // Line breaks
+            return text.replace(/\n/g, '<br>');
+        }
+
+        // Helper to escape HTML in code blocks
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                })[m];
+            });
+        }
+
+        state.messages[state.messages.length - 1].content = formatBotMessage(botMessage);
+        state.loading = false;
+        render();
     }
 
     addEventListeners();

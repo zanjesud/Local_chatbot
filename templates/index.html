@@ -2,11 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Local Chatbot</title>
+    <title>AI Chatbot</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Font Awesome for icons (CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+
+    <!-- Highlight.js CSS and JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
 </head>
 <body>
 <div id="app">
@@ -16,9 +21,10 @@
     <!-- Main Chat Area -->
     <main class="main">
         <header>
-            <span>AI Chatbot</span>
+            <span class="chatbot-title">AI Chatbot</span>
             <div class="controls">
-                <select id="model-selector">
+                <label for="model-selector" class="model-label">Model:</label>
+                <select id="model-selector" class="model-selector">
                     <option value="gemma3:4b">Gemma3:4</option>
                     <option value="deepseek-r1:1.5b">DeepSeek-r1:1.5</option>
                 </select>
