@@ -2,13 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Local Chatbot</title>
-    <link rel="stylesheet" href="/static/styles/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Font Awesome for icons (CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
 </head>
 <body>
-    <div id="app"></div>
+<div id="app">
+    <!-- Sidebar (optional, can be filled dynamically) -->
+    <!-- <aside class="sidebar"> ... </aside> -->
 
-    <script src="/static/js/chat.js"></script>
+    <!-- Main Chat Area -->
+    <main class="main">
+        <header>
+            <span>AI Chatbot</span>
+            <div class="controls">
+                <select id="model-selector">
+                    <option value="gemma3:4b">Gemma3:4</option>
+                    <option value="deepseek-r1:1.5b">DeepSeek-r1:1.5</option>
+                </select>
+            </div>
+        </header>
+        <section class="chat-history" id="chat-history">
+            <!-- Messages will be rendered here by JS -->
+        </section>
+        <!-- Typing indicator (show/hide via JS) -->
+        <div class="typing-indicator" id="typing-indicator" style="display:none;">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+        </div>
+        <!-- Input Area -->
+        <div class="input-container">
+            <!-- Place this inside your input-container, above the form -->
+            <div id="attached-files" class="attached-files"></div>
+            <form class="input-area" id="chat-form" enctype="multipart/form-data" autocomplete="off">
+                <label for="file-input" class="attach-label" title="Attach file">
+                    <i class="fas fa-paperclip"></i>
+                    <input type="file" id="file-input" accept="image/*,.pdf,.doc,.docx,.txt" multiple>
+                </label>
+                <textarea id="prompt-input" class="chat-input" placeholder="Ask me anything..." rows="1"></textarea>
+                <button type="submit" class="send-button" title="Send">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+            
+        </div>
+    </main>
+</div>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
 </body>
 </html>
