@@ -8,15 +8,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function render() {
         const chatHistory = document.getElementById('chat-history');
-        chatHistory.innerHTML = state.messages.map(message => {
+        chatHistory.innerHTML = state.messages.map((message, idx) => {
             const isUser = message.role === 'user';
+            // Only add controls for bot messages
+            let controls = '';
+            if (!isUser) {
+                controls = `
+                    <div class="message-controls">
+                        <button class="copy-code-btn" data-idx="${idx}" title="Copy code"><i class="fas fa-copy"></i></button>
+                        <button class="copy-text-btn" data-idx="${idx}" title="Copy text"><i class="fas fa-clipboard"></i></button>
+                        <button class="download-btn" data-idx="${idx}" title="Download"><i class="fas fa-download"></i></button>
+                    </div>
+                `;
+            }
             return `
                 <div class="message-row">
                     <div class="avatar ${isUser ? 'user' : 'bot'}">
                         <i class="fas fa-${isUser ? 'user' : 'robot'}"></i>
                     </div>
                     <div class="message ${isUser ? 'user' : 'bot'}">
-                        ${message.content.replace(/\n/g, '<br>')}
+                        ${!isUser ? controls : ''}
+                        ${message.content}
                     </div>
                 </div>
             `;
@@ -33,6 +45,88 @@ document.addEventListener('DOMContentLoaded', () => {
         chatHistory.scrollTop = chatHistory.scrollHeight;
     }
 
+    // Handle copy code button click
+
+    function addCopyDownloadListeners() {
+        // Copy code
+        document.querySelectorAll('.copy-code-btn').forEach(btn => {
+            btn.onclick = function(e) {
+                e.stopPropagation();
+                const idx = btn.getAttribute('data-idx');
+                const msg = state.messages[idx];
+                // Extract code blocks only
+                const codeMatches = msg.content.match(/<code.*?>([\s\S]*?)<\/code>/g);
+                if (codeMatches) {
+                    // Remove HTML tags and decode entities
+                    const codeText = codeMatches.map(c => c.replace(/<.*?>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')).join('\n\n');
+                    navigator.clipboard.writeText(codeText);
+                }
+            };
+        });
+        // Copy text
+        document.querySelectorAll('.copy-text-btn').forEach(btn => {
+            btn.onclick = function(e) {
+                e.stopPropagation();
+                const idx = btn.getAttribute('data-idx');
+                const msg = state.messages[idx];
+                // Remove all HTML tags for plain text
+                const text = msg.content.replace(/<[^>]+>/g, '');
+                navigator.clipboard.writeText(text);
+            };
+        });
+        // Download
+        document.querySelectorAll('.download-btn').forEach(btn => {
+            btn.onclick = function(e) {
+                e.stopPropagation();
+                const idx = btn.getAttribute('data-idx');
+                const msg = state.messages[idx];
+                const text = msg.content.replace(/<[^>]+>/g, '');
+                const blob = new Blob([text], {type: "text/plain"});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = "chatbot_response.txt";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+        });
+    }
+
+    // Copy and download button for code blocks
+    function addSingleCodeCopyDownloadListeners() {
+        // Copy code
+        document.querySelectorAll('.copy-single-code-btn').forEach(btn => {
+            btn.onclick = function(e) {
+                e.stopPropagation();
+                const codeId = btn.getAttribute('data-target');
+                const codeElem = document.getElementById(codeId);
+                if (codeElem) {
+                    navigator.clipboard.writeText(codeElem.innerText);
+                }
+            };
+        });
+        // Download code
+        document.querySelectorAll('.download-single-code-btn').forEach(btn => {
+            btn.onclick = function(e) {
+                e.stopPropagation();
+                const codeId = btn.getAttribute('data-target');
+                const codeElem = document.getElementById(codeId);
+                if (codeElem) {
+                    const blob = new Blob([codeElem.innerText], {type: "text/plain"});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = "code-block.txt";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+            };
+        });
+    }
     function showAttachedFiles(files) {
         const attachedFilesDiv = document.getElementById('attached-files');
         if (files.length === 0) {
@@ -79,120 +173,138 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function handleChatSubmit(e) {
-        e.preventDefault();
-        if(state.loading) return; // Prevent double submit
-        const promptInput = document.getElementById('prompt-input');
-        const fileInput = document.getElementById('file-input');
-        const prompt = promptInput.value.trim();
+    function formatBotMessage(text) {
+        // Format code blocks (```lang\ncode```)
+        text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
+        lang = lang || '';
+        const codeId = 'code-' + Math.random().toString(36).substr(2, 9);
+        return `
+            <div class="code-block-wrapper">
+                <div class="message-controls code-block-actions">
+                    <button class="copy-single-code-btn" data-target="${codeId}" title="Copy code">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="download-single-code-btn" data-target="${codeId}" title="Download code">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+                <pre class="chat-code-block"><code id="${codeId}" class="language-${lang}">${escapeHtml(code)}</code></pre>
+            </div>
+        `;
+    });
+        // Inline code
+        text = text.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+        // Bold and italic
+        text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        // Line breaks
+        return text.replace(/\n/g, '<br>');
+    }
 
-        if (!prompt && fileInput.files.length === 0) return;
-
-        // Add user message to state
-        state.messages.push({ role: 'user', content: prompt });
-
-        state.loading = true;
-        render();
-
-        promptInput.value = '';
-        promptInput.style.height = 'auto';
-
-        // Prepare FormData for files and JSON data
-        const formData = new FormData();
-        formData.append('model', state.model);
-        formData.append('messages', JSON.stringify(state.messages));
-        for (const file of fileInput.files) {
-            formData.append('files', file);
-        }
-        fileInput.value = '';
-
-        const response = await fetch('/api/generate', {
-            method: 'POST',
-            body: formData,
+    function escapeHtml(str) {
+        return str.replace(/[&<>"']/g, function(m) {
+            return ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[m];
         });
+    }
 
-        state.loading = false;
-        state.messages.push({ role: 'bot', content: '' });
-        render();
+    async function handleChatSubmit(e) {
+    e.preventDefault();
+    if(state.loading) return; // Prevent double submit
+    const promptInput = document.getElementById('prompt-input');
+    const fileInput = document.getElementById('file-input');
+    const prompt = promptInput.value.trim();
 
-        // Find the last bot message container
-        const chatHistory = document.getElementById('chat-history');
-        const botMessageContainers = chatHistory.querySelectorAll('.message.bot');
-        const botMessageContainer = botMessageContainers[botMessageContainers.length - 1];
+    if (!prompt && fileInput.files.length === 0) return;
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let botMessage = '';
+    // Add user message to state
+    state.messages.push({ role: 'user', content: prompt });
 
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
+    state.loading = true;
+    render();
+    addCopyDownloadListeners();
+    addSingleCodeCopyDownloadListeners();
 
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n\n');
+    promptInput.value = '';
+    promptInput.style.height = 'auto';
 
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    try {
-                        const data = JSON.parse(line.substring(6));
-                        if (data.message && data.message.content) {
-                            botMessage += data.message.content;                            
-                            botMessageContainer.innerHTML = botMessage.replace(/\n/g, '<br>');
-                            chatHistory.scrollTop = chatHistory.scrollHeight;
-                            if (window.hljs) hljs.highlightAll();
-                        } else if (data.error) {
-                            botMessageContainer.innerHTML = `Error: ${data.error}`;
-                             // Release lock on error
-                            state.loading = false;
-                            render();
-                            if (window.hljs) hljs.highlightAll();
-                            return;
-                        }
-                    } catch (error) {
-                        // Ignore JSON parsing errors
+    // Prepare FormData for files and JSON data
+    const formData = new FormData();
+    formData.append('model', state.model);
+    formData.append('messages', JSON.stringify(state.messages));
+    for (const file of fileInput.files) {
+        formData.append('files', file);
+    }
+    fileInput.value = '';
+
+    const response = await fetch('/api/generate', {
+        method: 'POST',
+        body: formData,
+    });
+
+    // Only now add the bot message placeholder
+    state.messages.push({ role: 'bot', content: '' });
+    render();
+    addCopyDownloadListeners();
+    addSingleCodeCopyDownloadListeners();
+
+    // Find the last bot message container
+    const chatHistory = document.getElementById('chat-history');
+    const botMessageContainers = chatHistory.querySelectorAll('.message.bot');
+    const botMessageContainer = botMessageContainers[botMessageContainers.length - 1];
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let botMessage = '';
+
+    while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n\n');
+
+        for (const line of lines) {
+            if (line.startsWith('data: ')) {
+                try {
+                    const data = JSON.parse(line.substring(6));
+                    if (data.message && data.message.content) {
+                        botMessage += data.message.content;
+                        botMessageContainer.innerHTML = formatBotMessage(botMessage);
+                        chatHistory.scrollTop = chatHistory.scrollHeight;
+                        if (window.hljs) hljs.highlightAll();
+                        addSingleCodeCopyDownloadListeners();
+                    } else if (data.error) {
+                        botMessageContainer.innerHTML = `Error: ${data.error}`;
+                        state.loading = false;
+                        render();
+                        if (window.hljs) hljs.highlightAll();
+                        addCopyDownloadListeners();
+                        addSingleCodeCopyDownloadListeners();
+                        return;
                     }
+                } catch (error) {
+                    // Ignore JSON parsing errors
                 }
             }
         }
-
-        // Format the final bot message before saving and rendering
-        function formatBotMessage(text) {
-            // Format code blocks (```lang\ncode```)
-            text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
-                lang = lang || ''; // fallback if no language
-                return `<pre class="chat-code-block"><code class="language-${lang}">${escapeHtml(code)}</code></pre>`;
-            });
-            // Format code blocks without language (```code```)
-            text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
-                return `<pre class="chat-code-block"><code>${escapeHtml(code)}</code></pre>`;
-            });
-            // Inline code
-            text = text.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
-            // Bold and italic
-            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-            // Line breaks
-            return text.replace(/\n/g, '<br>');
-        }
-
-        // Helper to escape HTML in code blocks
-        function escapeHtml(str) {
-            return str.replace(/[&<>"']/g, function(m) {
-                return ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#39;'
-                })[m];
-            });
-        }
-
-        state.messages[state.messages.length - 1].content = formatBotMessage(botMessage);
-        state.loading = false;
-        render();
     }
+
+    // After streaming is done, update state and UI
+    state.messages[state.messages.length - 1].content = formatBotMessage(botMessage);
+    state.loading = false;
+    render();
+    addCopyDownloadListeners();
+    addSingleCodeCopyDownloadListeners();
+}
 
     addEventListeners();
     render();
+    addCopyDownloadListeners();
+    addSingleCodeCopyDownloadListeners();
 });
