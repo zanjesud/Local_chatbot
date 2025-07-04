@@ -347,38 +347,51 @@ input[type="file"] {
 .code-block-wrapper {
     position: relative;
     border-radius: 8px;
-    margin: 1em 0;
+    margin: 0.5em 0; /* Reduced margin */
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     background: #070708; /* Match code background */
 }
 
+
 .chat-code-block {
     background: #070708;
     color: #f8f8f2;
-    padding: 0 1em 1em 1em;
-    margin: 0;
+    border-radius: 0 0 8px 8px; /* Only round bottom corners */
+    padding: 0.5em 1em; /* Reduced vertical padding */
+    margin: 0; /* Remove margin */
     font-size: 1em;
     overflow-x: auto;
-    border-radius: 0 0 8px 8px;
-    padding-top: 36px; /* Match header height exactly */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    position: relative;
+    line-height: 1.0; /* Tighter line spacing */
 }
 
+/* Add this to reduce space around code */
+.chat-code-block code {
+    display: block;
+    padding: 0;
+    margin: 0;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    font-size: 0.95em; /* Slightly smaller font */
+}
+
+/* Adjust header height and positioning */
 .code-block-header {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 36px; /* Fixed pixel height */
+    height: 34px; /* Reduced height */
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    justify-content: space-between; /* Language left, buttons right */
-    background: #202020;
-    padding: 0 12px; /* More balanced padding */
+    justify-content: space-between;
+    background: #313131;
+    padding: 0 0.8em;
     z-index: 2;
-    border-bottom: 1px solid #131212;
-    font-size: 14px; /* Consistent font size */
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 0.9em; /* Smaller font */
 }
 
 /* Button styling */

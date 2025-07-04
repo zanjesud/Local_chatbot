@@ -16,7 +16,7 @@ def index():
 
 @app.route('/api/models', methods=['GET'])
 def get_models():
-    return jsonify(["gemma3:4b", "deepseek-r1:1.5b"])
+    return jsonify(["gemma3:4b", "deepseek-r1:8b"])
 
 @app.route('/api/generate', methods=['POST'])
 def generate():
@@ -36,21 +36,21 @@ def generate():
                     content = file.read().decode('utf-8', errors='ignore')
                     messages.append({
                         "role": "user",
-                        "content": f"[File: {filename}]\n{content[:2500]}"  # Limit to first 2500 chars
+                        "content": f"[File: {filename}]\n{content[:9999]}"  # Limit to first 9999 chars
                     })
                 elif ext == 'pdf':
                     with pdfplumber.open(io.BytesIO(file.read())) as pdf:
                         content = "\n".join(page.extract_text() or "" for page in pdf.pages)
                     messages.append({
                         "role": "user",
-                        "content": f"[File: {filename}]\n{content[:2500]}"
+                        "content": f"[File: {filename}]\n{content[:9999]}"
                     })
                 elif ext in ['docx']:
                     doc = docx.Document(io.BytesIO(file.read()))
                     content = "\n".join([para.text for para in doc.paragraphs])
                     messages.append({
                         "role": "user",
-                        "content": f"[File: {filename}]\n{content[:2500]}"
+                        "content": f"[File: {filename}]\n{content[:9999]}"
                     })
                 elif ext in ['jpg', 'jpeg', 'png']:
                     # Read image as base64
