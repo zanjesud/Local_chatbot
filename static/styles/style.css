@@ -344,17 +344,96 @@ input[type="file"] {
 }
 /* ===== Code Blocks ===== */
 
+.code-block-wrapper {
+    position: relative;
+    border-radius: 8px;
+    margin: 1em 0;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    background: #070708; /* Match code background */
+}
+
 .chat-code-block {
     background: #070708;
     color: #f8f8f2;
-    border-radius: 8px;
-    padding: 1.5em 1em 1em 1em; /* extra top padding for buttons */
-    margin: .70em 0;
+    padding: 0 1em 1em 1em;
+    margin: 0;
     font-size: 1em;
     overflow-x: auto;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    position: relative;
+    border-radius: 0 0 8px 8px;
+    padding-top: 36px; /* Match header height exactly */
 }
+
+.code-block-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 36px; /* Fixed pixel height */
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Language left, buttons right */
+    background: #202020;
+    padding: 0 12px; /* More balanced padding */
+    z-index: 2;
+    border-bottom: 1px solid #131212;
+    font-size: 14px; /* Consistent font size */
+}
+
+/* Button styling */
+.code-block-header button {
+    background: #23232b;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    width: 24px;
+}
+
+/* Icon sizing */
+.code-block-header button i {
+    font-size: 12px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.code-block-header button:hover {
+    opacity: 1;
+    background: #10a37f;
+}
+    
+/* .code-block-header button {
+    padding: 2px 6px;
+    font-size: 0.85em; } */
+
+.code-block-lang {
+    position: absolute;
+    left: 12px;
+    color: #fff;
+    font-weight: 600;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    opacity: 0.85;
+    letter-spacing: 0.03em;
+}
+
+/* Button container positioning */
+.code-block-header .message-controls {
+    position: absolute;
+    right: 8px;
+    display: flex;
+    gap: 4px;
+}
+
 .inline-code {
     background: #e6f9ed;
     color: #17644e;
@@ -363,35 +442,7 @@ input[type="file"] {
     font-family: 'Fira Mono', 'Consolas', monospace;
     font-size: 0.98em;
 }
-.code-block-wrapper {
-    position: relative;
-    margin: 1em 0;
-}
-.code-block-actions {
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    display: flex;
-    gap: 0.3em;
-    z-index: 2;
-}
-.code-block-actions button {
-    background: #23232b;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 0.95em;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.2s, background 0.2s;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.10);
-}
-.code-block-actions button:hover {
-    opacity: 1;
-    background: #10a37f;
-    color: #fff;
-}
+
 .send-button:hover {
     background: #0d8e6f;
     color: #fff;

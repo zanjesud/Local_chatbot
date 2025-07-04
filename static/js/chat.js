@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show typing indicator if loading
         document.getElementById('typing-indicator').style.display = state.loading ? 'flex' : 'none';
-        
+
         // Disable/enable input and send button
         document.querySelector('.send-button').disabled = state.loading;
         document.querySelector('.chat-input').disabled = state.loading;
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function addCopyDownloadListeners() {
         // Copy code
         document.querySelectorAll('.copy-code-btn').forEach(btn => {
-            btn.onclick = function(e) {
+            btn.onclick = function (e) {
                 e.stopPropagation();
                 const idx = btn.getAttribute('data-idx');
                 const msg = state.messages[idx];
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         // Copy text
         document.querySelectorAll('.copy-text-btn').forEach(btn => {
-            btn.onclick = function(e) {
+            btn.onclick = function (e) {
                 e.stopPropagation();
                 const idx = btn.getAttribute('data-idx');
                 const msg = state.messages[idx];
@@ -76,12 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         // Download
         document.querySelectorAll('.download-btn').forEach(btn => {
-            btn.onclick = function(e) {
+            btn.onclick = function (e) {
                 e.stopPropagation();
                 const idx = btn.getAttribute('data-idx');
                 const msg = state.messages[idx];
                 const text = msg.content.replace(/<[^>]+>/g, '');
-                const blob = new Blob([text], {type: "text/plain"});
+                const blob = new Blob([text], { type: "text/plain" });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function addSingleCodeCopyDownloadListeners() {
         // Copy code
         document.querySelectorAll('.copy-single-code-btn').forEach(btn => {
-            btn.onclick = function(e) {
+            btn.onclick = function (e) {
                 e.stopPropagation();
                 const codeId = btn.getAttribute('data-target');
                 const codeElem = document.getElementById(codeId);
@@ -109,12 +109,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         // Download code
         document.querySelectorAll('.download-single-code-btn').forEach(btn => {
-            btn.onclick = function(e) {
+            btn.onclick = function (e) {
                 e.stopPropagation();
                 const codeId = btn.getAttribute('data-target');
                 const codeElem = document.getElementById(codeId);
                 if (codeElem) {
-                    const blob = new Blob([codeElem.innerText], {type: "text/plain"});
+                    const blob = new Blob([codeElem.innerText], { type: "text/plain" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -176,22 +176,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function formatBotMessage(text) {
         // Format code blocks (```lang\ncode```)
         text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
-        lang = lang || '';
-        const codeId = 'code-' + Math.random().toString(36).substr(2, 9);
-        return `
+            lang = lang || '';
+            const codeId = 'code-' + Math.random().toString(36).substr(2, 9);
+            return `
             <div class="code-block-wrapper">
-                <div class="message-controls code-block-actions">
-                    <button class="copy-single-code-btn" data-target="${codeId}" title="Copy code">
-                        <i class="fas fa-copy"></i>
-                    </button>
-                    <button class="download-single-code-btn" data-target="${codeId}" title="Download code">
-                        <i class="fas fa-download"></i>
-                    </button>
+                <div class="code-block-header">
+                    <span class="code-block-lang">${lang ? lang : 'code'}</span>
+                    <div class="message-controls">
+                        <button class="copy-single-code-btn" data-target="${codeId}" title="Copy code">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="download-single-code-btn" data-target="${codeId}" title="Download code">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
                 </div>
                 <pre class="chat-code-block"><code id="${codeId}" class="language-${lang}">${escapeHtml(code)}</code></pre>
             </div>
         `;
-    });
+        });
         // Inline code
         text = text.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
         // Bold and italic
@@ -202,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function escapeHtml(str) {
-        return str.replace(/[&<>"']/g, function(m) {
+        return str.replace(/[&<>"']/g, function (m) {
             return ({
                 '&': '&amp;',
                 '<': '&lt;',
@@ -214,94 +217,95 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function handleChatSubmit(e) {
-    e.preventDefault();
-    if(state.loading) return; // Prevent double submit
-    const promptInput = document.getElementById('prompt-input');
-    const fileInput = document.getElementById('file-input');
-    const prompt = promptInput.value.trim();
+        e.preventDefault();
+        if (state.loading) return; // Prevent double submit
+        const promptInput = document.getElementById('prompt-input');
+        const fileInput = document.getElementById('file-input');
+        const prompt = promptInput.value.trim();
 
-    if (!prompt && fileInput.files.length === 0) return;
+        if (!prompt && fileInput.files.length === 0) return;
 
-    // Add user message to state
-    state.messages.push({ role: 'user', content: prompt });
+        // Add user message to state
+        state.messages.push({ role: 'user', content: prompt });
 
-    state.loading = true;
-    render();
-    addCopyDownloadListeners();
-    addSingleCodeCopyDownloadListeners();
+        state.loading = true;
+        render();
+        addCopyDownloadListeners();
+        addSingleCodeCopyDownloadListeners();
+        
 
-    promptInput.value = '';
-    promptInput.style.height = 'auto';
+        promptInput.value = '';
+        promptInput.style.height = 'auto';
 
-    // Prepare FormData for files and JSON data
-    const formData = new FormData();
-    formData.append('model', state.model);
-    formData.append('messages', JSON.stringify(state.messages));
-    for (const file of fileInput.files) {
-        formData.append('files', file);
-    }
-    fileInput.value = '';
+        // Prepare FormData for files and JSON data
+        const formData = new FormData();
+        formData.append('model', state.model);
+        formData.append('messages', JSON.stringify(state.messages));
+        for (const file of fileInput.files) {
+            formData.append('files', file);
+        }
+        fileInput.value = '';
 
-    const response = await fetch('/api/generate', {
-        method: 'POST',
-        body: formData,
-    });
+        const response = await fetch('/api/generate', {
+            method: 'POST',
+            body: formData,
+        });
 
-    // Only now add the bot message placeholder
-    state.messages.push({ role: 'bot', content: '' });
-    render();
-    addCopyDownloadListeners();
-    addSingleCodeCopyDownloadListeners();
+        // Only now add the bot message placeholder
+        state.messages.push({ role: 'bot', content: '' });
+        render();
+        addCopyDownloadListeners();
+        addSingleCodeCopyDownloadListeners();
 
-    // Find the last bot message container
-    const chatHistory = document.getElementById('chat-history');
-    const botMessageContainers = chatHistory.querySelectorAll('.message.bot');
-    const botMessageContainer = botMessageContainers[botMessageContainers.length - 1];
+        // Find the last bot message container
+        const chatHistory = document.getElementById('chat-history');
+        const botMessageContainers = chatHistory.querySelectorAll('.message.bot');
+        const botMessageContainer = botMessageContainers[botMessageContainers.length - 1];
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let botMessage = '';
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let botMessage = '';
 
-    while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n\n');
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n\n');
 
-        for (const line of lines) {
-            if (line.startsWith('data: ')) {
-                try {
-                    const data = JSON.parse(line.substring(6));
-                    if (data.message && data.message.content) {
-                        botMessage += data.message.content;
-                        botMessageContainer.innerHTML = formatBotMessage(botMessage);
-                        chatHistory.scrollTop = chatHistory.scrollHeight;
-                        if (window.hljs) hljs.highlightAll();
-                        addSingleCodeCopyDownloadListeners();
-                    } else if (data.error) {
-                        botMessageContainer.innerHTML = `Error: ${data.error}`;
-                        state.loading = false;
-                        render();
-                        if (window.hljs) hljs.highlightAll();
-                        addCopyDownloadListeners();
-                        addSingleCodeCopyDownloadListeners();
-                        return;
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const data = JSON.parse(line.substring(6));
+                        if (data.message && data.message.content) {
+                            botMessage += data.message.content;
+                            botMessageContainer.innerHTML = formatBotMessage(botMessage);
+                            chatHistory.scrollTop = chatHistory.scrollHeight;
+                            if (window.hljs) hljs.highlightAll();
+                            addSingleCodeCopyDownloadListeners();
+                        } else if (data.error) {
+                            botMessageContainer.innerHTML = `Error: ${data.error}`;
+                            state.loading = false;
+                            render();
+                            if (window.hljs) hljs.highlightAll();
+                            addCopyDownloadListeners();
+                            addSingleCodeCopyDownloadListeners();
+                            return;
+                        }
+                    } catch (error) {
+                        // Ignore JSON parsing errors
                     }
-                } catch (error) {
-                    // Ignore JSON parsing errors
                 }
             }
         }
-    }
 
-    // After streaming is done, update state and UI
-    state.messages[state.messages.length - 1].content = formatBotMessage(botMessage);
-    state.loading = false;
-    render();
-    addCopyDownloadListeners();
-    addSingleCodeCopyDownloadListeners();
-}
+        // After streaming is done, update state and UI
+        state.messages[state.messages.length - 1].content = formatBotMessage(botMessage);
+        state.loading = false;
+        render();
+        addCopyDownloadListeners();
+        addSingleCodeCopyDownloadListeners();
+    }
 
     addEventListeners();
     render();
