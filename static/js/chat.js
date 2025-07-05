@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
         loading: false,
     };
 
+    // Add this variable to track the current AbortController
+    let currentAbortController = null;
+
     function render() {
         const chatHistory = document.getElementById('chat-history');
         chatHistory.innerHTML = state.messages.map((message, idx) => {
@@ -40,6 +43,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Disable/enable input and send button
         document.querySelector('.send-button').disabled = state.loading;
         document.querySelector('.chat-input').disabled = state.loading;
+
+        // Show/hide Stop button
+        const stopBtn = document.getElementById('stop-button');
+        if (stopBtn) stopBtn.style.display = state.loading ? 'block' : 'none';
+
 
         // Auto-scroll to bottom
         chatHistory.scrollTop = chatHistory.scrollHeight;
@@ -246,10 +254,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         fileInput.value = '';
 
-        const response = await fetch('/api/generate', {
-            method: 'POST',
-            body: formData,
-        });
+        // Create a new AbortController for this request
+        currentAbortController = new AbortController();
+
+        let response;
+        try {
+            response = await fetch('/api/generate', {
+                method: 'POST',
+                body: formData,
+                signal: currentAbortController.signal, // Pass the signal
+            });
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                // Aborted by user
+                state.loading = false;
+                render();
+                addCopyDownloadListeners();
+                addSingleCodeCopyDownloadListeners();
+                // Optionally, show a message that the response was stopped
+                // state.messages.push({ role: 'bot', content: '<em>Response stopped by user.</em>' });
+                render();
+                addCopyDownloadListeners();
+                addSingleCodeCopyDownloadListeners();
+                return;
+            } else {
+                // Other error
+                state.loading = false;
+                render();
+                addCopyDownloadListeners();
+                addSingleCodeCopyDownloadListeners();
+                // state.messages.push({ role: 'bot', content: `<em>Error: ${err.message}</em>` });
+                render();
+                addCopyDownloadListeners();
+                addSingleCodeCopyDownloadListeners();
+                return;
+            }
+        }
 
         // Only now add the bot message placeholder
         state.messages.push({ role: 'bot', content: '' });
@@ -266,36 +306,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const decoder = new TextDecoder();
         let botMessage = '';
 
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
+        try {
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
 
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n\n');
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n\n');
 
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    try {
-                        const data = JSON.parse(line.substring(6));
-                        if (data.message && data.message.content) {
-                            botMessage += data.message.content;
-                            botMessageContainer.innerHTML = formatBotMessage(botMessage);
-                            chatHistory.scrollTop = chatHistory.scrollHeight;
-                            if (window.hljs) hljs.highlightAll();
-                            addSingleCodeCopyDownloadListeners();
-                        } else if (data.error) {
-                            botMessageContainer.innerHTML = `Error: ${data.error}`;
-                            state.loading = false;
-                            render();
-                            if (window.hljs) hljs.highlightAll();
-                            addCopyDownloadListeners();
-                            addSingleCodeCopyDownloadListeners();
-                            return;
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const data = JSON.parse(line.substring(6));
+                            if (data.message && data.message.content) {
+                                botMessage += data.message.content;
+                                botMessageContainer.innerHTML = formatBotMessage(botMessage);
+                                chatHistory.scrollTop = chatHistory.scrollHeight;
+                                if (window.hljs) hljs.highlightAll();
+                                addSingleCodeCopyDownloadListeners();
+                            } else if (data.error) {
+                                botMessageContainer.innerHTML = `Error: ${data.error}`;
+                                state.loading = false;
+                                render();
+                                if (window.hljs) hljs.highlightAll();
+                                addCopyDownloadListeners();
+                                addSingleCodeCopyDownloadListeners();
+                                return;
+                            }
+                        } catch (error) {
+                            // Ignore JSON parsing errors
                         }
-                    } catch (error) {
-                        // Ignore JSON parsing errors
                     }
                 }
+            }
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                // Aborted during streaming
+                botMessageContainer.innerHTML = '<em>Response stopped by user.</em>';
+            } else {
+                botMessageContainer.innerHTML = `<em>Error: ${err.message}</em>`;
             }
         }
 
@@ -305,10 +354,23 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
         addCopyDownloadListeners();
         addSingleCodeCopyDownloadListeners();
+        currentAbortController = null;
+    }
+
+    function addStopButtonListener() {
+        const stopBtn = document.getElementById('stop-button');
+        if (!stopBtn) return;
+        stopBtn.onclick = function (e) {
+            e.preventDefault();
+            if (state.loading && currentAbortController) {
+                currentAbortController.abort();
+            }
+        };
     }
 
     addEventListeners();
     render();
     addCopyDownloadListeners();
     addSingleCodeCopyDownloadListeners();
+    addStopButtonListener();
 });

@@ -23,22 +23,28 @@
         <header>
             <span class="chatbot-title">AI Chatbot</span>
             <div class="controls">
-                <label for="model-selector" class="model-label">Model:</label>
+                <label for="model-selector" class="model-label">Model</label>
                 <select id="model-selector" class="model-selector">
                     <option value="gemma3:4b">Gemma3:4</option>
                     <option value="deepseek-r1:8b">DeepSeek-r1:8b</option>
                 </select>
             </div>
         </header>
-        <section class="chat-history" id="chat-history">
-            <!-- Messages will be rendered here by JS -->
+        <section class="chat-history" id="chat-history" style="position: relative;">
+              <!-- This section will contain the chat messages -->
+            
         </section>
+        <!-- Messages will be rendered here by JS -->
+              <button id="stop-button" title="Stop response" style="display:none;">
+                    <i class="fas fa-stop"></i>
+            </button>
         <!-- Typing indicator (show/hide via JS) -->
         <div class="typing-indicator" id="typing-indicator" style="display:none;">
             <span class="typing-dot"></span>
             <span class="typing-dot"></span>
             <span class="typing-dot"></span>
         </div>
+       
         <!-- Input Area -->
         <div class="input-container">
             <!-- Place this inside your input-container, above the form -->
@@ -52,7 +58,7 @@
                 <button type="submit" class="send-button" title="Send">
                     <i class="fas fa-paper-plane"></i>
                 </button>
-            </form>
+            </form>           
             
         </div>
     </main>

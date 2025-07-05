@@ -137,7 +137,7 @@ header {
     color: var(--user-text);
     margin-right: auto;
     margin-left: 0;
-    border-radius: 8px var(--border-radius) var(--border-radius) var(--border-radius);
+    border-radius: var(--border-radius) var(--border-radius) var(--border-radius) 8px;
     border: 1px solid #e0e0e0;
     box-shadow: 0 2px 12px rgba(16,163,127,0.10);
     padding: 1.1em 1.5em;
@@ -154,7 +154,7 @@ header {
     color: var(--bot-text);
     margin-right: auto;
     margin-left: 5%;
-    border-radius: 8px var(--border-radius) var(--border-radius) var(--border-radius);
+    border-radius: var(--border-radius) var(--border-radius) var(--border-radius) 8px;
     border: 1.5px solid #e0e0e0;
     box-shadow: 0 2px 12px rgba(0,0,0,0.10);
     padding: 1.1em 1.5em;
@@ -470,7 +470,86 @@ input[type="file"] {
     color: #aaa;
     cursor: not-allowed;
 }
+/* ===== Stop Button ===== */
+#stop-button {
+    display: none;
+    position: fixed;
+    right: 18px;         /* closer to the edge */
+    bottom: 120px;       /* higher above the input area */
+    z-index: 200;
+    background: linear-gradient(135deg, #e74c3c 60%, #ff7675 100%);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 42px;         /* smaller */
+    height: 42px;        /* smaller */
+    font-size: 1.3em;    /* smaller icon */
+    box-shadow: 0 2px 8px rgba(231,76,60,0.18), 0 1.5px 8px rgba(0,0,0,0.10);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    animation: stop-blink 1.2s infinite, stop-bubble 2.5s infinite;
+    outline: none;
+    border: 2px solid #fff;
+}
 
+#stop-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(231,76,60,0.18);
+}
+
+#stop-button:hover {
+    background: linear-gradient(135deg, #ff7675 60%, #e74c3c 100%);
+    box-shadow: 0 6px 32px rgba(231,76,60,0.32), 0 2px 12px rgba(0,0,0,0.12);
+}
+
+#stop-button i {
+    pointer-events: none;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+/* Blinking (pulsing) animation */
+@keyframes stop-blink {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(231,76,60,0.5), 0 4px 24px rgba(231,76,60,0.25);}
+    50% { box-shadow: 0 0 0 12px rgba(231,76,60,0.12), 0 4px 24px rgba(231,76,60,0.25);}
+}
+
+/* Bubbling animation */
+@keyframes stop-bubble {
+    0%, 100% { transform: scale(1);}
+    10% { transform: scale(1.08);}
+    20% { transform: scale(0.97);}
+    30% { transform: scale(1.04);}
+    40% { transform: scale(0.98);}
+    50% { transform: scale(1.02);}
+    60% { transform: scale(1);}
+}
+/* #stop-button {
+    display: none;
+    position: absolute;
+    right: 24px;
+    bottom: 6em; /* 
+    z-index: 100;
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    font-size: 1.7em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+#stop-button:hover {
+    background: #c0392b;
+}
+#stop-button i {
+    pointer-events: none;
+} */
 /* ===== Responsive Design ===== */
 @media (max-width: 700px) {
     #app {
